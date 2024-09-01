@@ -1,0 +1,54 @@
+# Your Solution
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    platform: linux/amd64
+    environment:
+      POSTGRES_USER: $POSTGRES_UN
+      POSTGRES_PASSWORD: $POSTGRES_PW
+      POSTGRES_DB: library_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  book_catalog:
+    build:
+      context: ./book_catalog
+      dockerfile: Dockerfile
+    image: book_catalog:latest
+    container_name: book_catalog
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: library_db
+      DATABASE_USER: $POSTGRES_UN
+      DATABASE_PASSWORD: $POSTGRES_PW
+    ports:
+      - "4001:4001"
+    depends_on:
+      - postgres
+
+  inventory_management:
+    build:
+      context: ./inventory_management
+      dockerfile: Dockerfile
+    image: inventory_management:latest
+    container_name: inventory_management
+    platform: linux/amd64
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: library_db
+      DATABASE_USER: $POSTGRES_UN
+      DATABASE_PASSWORD: $POSTGRES_PW
+    ports:
+      - "4002:4002"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
